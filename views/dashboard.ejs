@@ -681,7 +681,7 @@
                     
                     // Auto-advance to next input
                     if (this.value.length === 1 && index < inputsArray.length - 1) {
-                        inputsArray[index + 1].focus();
+                        inputsArray[index + 1].focus({ preventScroll: true });
                     }
                 });
             });
@@ -891,7 +891,7 @@
                             input.value = '';
                         });
                         if (document.getElementById('guess1')) {
-                            document.getElementById('guess1').focus();
+                            document.getElementById('guess1').focus({ preventScroll: true });
                         }
                     }, 100);
                     
@@ -950,7 +950,7 @@
                             input.value = '';
                         });
                         if (document.getElementById('guess1')) {
-                            document.getElementById('guess1').focus();
+                            document.getElementById('guess1').focus({ preventScroll: true });
                         }
                     }, 100);
                     
@@ -1007,15 +1007,18 @@
             }
             
             if (document.getElementById('guess1')) {
-                document.getElementById('guess1').focus();
+                document.getElementById('guess1').focus({ preventScroll: true });
             }
         });
 
         // Initialize
         attachInputListeners();
         if (document.getElementById('guess1')) {
-            document.getElementById('guess1').focus();
+            document.getElementById('guess1').focus({ preventScroll: true });
         }
+        
+        // Ensure page starts from the top
+        window.scrollTo(0, 0);
 
         // Bet Details Modal Functions
         function showBetDetails(gameType, userNumbers, winningNumbers, won, betAmount, winAmount) {
