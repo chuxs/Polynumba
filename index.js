@@ -1054,7 +1054,7 @@ app.post("/logout", (req, res) => {
         if (err) {
             console.error("Error destroying session:", err);
         }
-        res.redirect("/login");
+        res.redirect("/");
     });
 });
 
