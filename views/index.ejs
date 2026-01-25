@@ -111,7 +111,7 @@
                     <div class="panel-header">
                         <h2 id="game-title">4-Number Prediction</h2>
                         <div class="start-game-section">
-                            <button type="button" id="start-game-btn" class="btn-start-game" style="display: none;">Start Game</button>
+                            <button type="button" id="start-game-btn" class="btn-start-game">Start Game</button>
                             <div id="generated-numbers-display" class="generated-numbers-display" style="display: none;">
                                 <span class="numbers-placeholder">* * * *</span>
                             </div>
@@ -686,22 +686,17 @@
             const btn = this;
             const originalText = btn.textContent;
             
-            // Check if bet amount is selected
-            const betAmountInput = document.getElementById('bet-amount');
-            const betAmount = parseFloat(betAmountInput.value);
-            
-            if (!betAmount || betAmount <= 0) {
-                showBetMessage('You need to select an amount before you start a game', 'error');
-                return;
-            }
-            
             hideBetMessage();
             
             btn.disabled = true;
             btn.textContent = 'Starting...';
             
             try {
+                // Get bet amount and game type
+                const betAmountInput = document.getElementById('bet-amount');
+                const betAmount = parseFloat(betAmountInput.value);
                 const gameType = document.getElementById('game-type').value || '4';
+                
                 const response = await fetch('/start-game', {
                     method: 'POST',
                     headers: {
@@ -755,26 +750,51 @@
                     }
                 } else {
                     if (data.requiresLogin) {
-                        // Redirect to login
-                        if (confirm('You need to log in to start a game. Would you like to go to the login page?')) {
-                            window.location.href = '/login';
-                        }
+                        // Show message that user needs to log in
+                        showBetMessage('You need to log in to start a game. Please log in or register to continue.', 'error');
                     } else if (data.requiresBetAmount) {
-                        alert('Please select an amount you would like to play with.');
+                        showBetMessage('Please select an amount you would like to play with.', 'error');
                     } else {
-                        alert(data.error || 'Failed to start game. Please try again.');
+                        showBetMessage(data.error || 'Failed to start game. Please try again.', 'error');
                     }
                     btn.textContent = originalText;
                     btn.disabled = false;
                 }
             } catch (error) {
                 console.error('Error starting game:', error);
-                alert('An error occurred. Please try again.');
+                showBetMessage('An error occurred. Please try again.', 'error');
                 btn.textContent = originalText;
                 btn.disabled = false;
             }
         });
 
+        // Check game status on page load (for index page - non-logged in users)
+        async function checkGameStatus() {
+            try {
+                const response = await fetch('/get-game-status');
+                const data = await response.json();
+                
+                // For logged-in users who navigate to index page, check if they have an active game
+                if (data.success && data.hasActiveGame) {
+                    // Redirect them to dashboard to continue their game
+                    window.location.href = '/dashboard';
+                    return;
+                }
+                
+                // For non-logged-in users, ensure start button is visible
+                const startBtn = document.getElementById('start-game-btn');
+                if (startBtn) {
+                    startBtn.style.display = 'inline-block';
+                }
+            } catch (error) {
+                // User not logged in or error - just ensure start button is visible
+                const startBtn = document.getElementById('start-game-btn');
+                if (startBtn) {
+                    startBtn.style.display = 'inline-block';
+                }
+            }
+        }
+        
         // Initialize
         attachInputListeners();
         if (document.getElementById('guess1')) {
