@@ -1467,16 +1467,19 @@ body {
 @media (max-width: 968px) {
     .content-layout {
         grid-template-columns: 1fr;
-        padding: 20px 16px;
+        padding: 16px;
+        gap: 20px;
     }
 
     .left-sidebar,
     .right-sidebar {
         order: 2;
+        display: none; /* Hide sidebars on mobile for better UX */
     }
 
     .center-content {
         order: 1;
+        width: 100%;
     }
 
     .nav-menu {
@@ -1541,9 +1544,12 @@ body {
 @media (max-width: 768px) {
     .nav-container,
     .secondary-nav-container,
-    .content-layout,
     .footer-container {
         padding: 0 16px;
+    }
+    
+    .content-layout {
+        padding: 16px 12px;
     }
     
     .nav-container {
@@ -1556,6 +1562,11 @@ body {
     
     .logo-text {
         font-size: 1.25rem;
+    }
+    
+    /* Better game panel spacing on mobile */
+    .game-panel {
+        margin-bottom: 16px;
     }
     
     .secondary-nav {
@@ -1598,6 +1609,11 @@ body {
         flex-direction: column;
         align-items: flex-start;
         gap: 12px;
+        padding: 14px 16px;
+    }
+    
+    .panel-header h2 {
+        font-size: 0.9375rem;
     }
     
     .start-game-section {
@@ -1605,8 +1621,18 @@ body {
         justify-content: space-between;
     }
     
+    .btn-start-game {
+        padding: 8px 20px;
+        font-size: 0.8125rem;
+    }
+    
     .game-interface {
-        padding: 20px 16px;
+        padding: 16px 12px;
+    }
+    
+    .game-instructions {
+        padding: 12px;
+        margin-bottom: 20px;
     }
 
     .footer-container {
@@ -1669,7 +1695,7 @@ body {
 
 @media (max-width: 480px) {
     .content-layout {
-        padding: 16px 12px;
+        padding: 12px 8px;
     }
     
     .nav-container,
@@ -1683,7 +1709,12 @@ body {
     }
     
     .promo-banner {
-        padding: 20px 16px;
+        padding: 16px 12px;
+        border-radius: 4px;
+        margin-bottom: 12px;
+    }
+    
+    .game-panel {
         border-radius: 4px;
     }
     
