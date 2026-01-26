@@ -2,7 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#0f1419">
     <title>Dashboard - Polynumba</title>
     <link rel="icon" type="image/png" href="/images/polunumba_logo.png">
     <link rel="stylesheet" href="/style.css">
@@ -31,9 +34,51 @@
                         <button type="submit" class="btn-logout">Logout</button>
                     </form>
                 </div>
+                <button class="mobile-menu-toggle" id="mobile-menu-toggle" aria-label="Open menu">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
             </div>
         </div>
     </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-overlay" id="mobile-menu-overlay"></div>
+    <div class="mobile-menu" id="mobile-menu">
+        <div class="mobile-menu-header">
+            <div class="logo-container">
+                <img src="/images/polunumba_logo.png" alt="Polynumba Logo" class="logo-image" style="height: 28px;">
+                <span class="logo-text" style="font-size: 1.125rem;">POLYNUMBA</span>
+            </div>
+            <button class="mobile-menu-close" id="mobile-menu-close" aria-label="Close menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+        <div class="mobile-menu-content">
+            <div class="user-balance-nav" style="margin-bottom: 16px; width: 100%; justify-content: space-between;">
+                <span class="balance-label-nav">Balance:</span>
+                <span class="balance-amount-nav">₦40,000.00</span>
+            </div>
+            <ul class="mobile-menu-nav">
+                <li><a href="/dashboard" class="active">Dashboard</a></li>
+                <li><a href="/how-to-play" target="_blank">How to Play</a></li>
+            </ul>
+            <div class="mobile-menu-actions">
+                <div style="text-align: center; padding: 12px 0; color: var(--text-secondary);">
+                    Logged in as <strong style="color: var(--text-primary);"><%= typeof user !== 'undefined' && user && user.username ? user.username : 'User' %></strong>
+                </div>
+                <form action="/logout" method="POST" style="width: 100%;">
+                    <button type="submit" class="btn-logout" style="width: 100%; padding: 12px;">Logout</button>
+                </form>
+            </div>
+        </div>
+    </div>
 
     <!-- Balance Display at Top -->
     <div class="balance-header">
@@ -1538,6 +1583,43 @@
         checkGameStatus();
         // Load game history on page load
         loadGameHistory();
+        
+        // Mobile menu functionality
+        const mobileMenuToggle = document.getElementById('mobile-menu-toggle');
+        const mobileMenuClose = document.getElementById('mobile-menu-close');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+        
+        function openMobileMenu() {
+            mobileMenu.classList.add('active');
+            mobileMenuOverlay.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeMobileMenu() {
+            mobileMenu.classList.remove('active');
+            mobileMenuOverlay.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+        
+        if (mobileMenuToggle) {
+            mobileMenuToggle.addEventListener('click', openMobileMenu);
+        }
+        
+        if (mobileMenuClose) {
+            mobileMenuClose.addEventListener('click', closeMobileMenu);
+        }
+        
+        if (mobileMenuOverlay) {
+            mobileMenuOverlay.addEventListener('click', closeMobileMenu);
+        }
+        
+        // Close mobile menu on escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+                closeMobileMenu();
+            }
+        });
     </script>
 </body>
 </html>
