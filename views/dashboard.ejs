@@ -97,8 +97,12 @@
     <!-- Dashboard Tabs -->
     <div class="dashboard-tabs">
         <div class="dashboard-tabs-container">
-            <button class="dashboard-tab active" onclick="switchDashboardTab('play', 4)">4-Number</button>
-            <button class="dashboard-tab" onclick="switchDashboardTab('play', 3)">3-Number</button>
+            <!-- Desktop: General Play Game tab -->
+            <button class="dashboard-tab desktop-play-tab active" onclick="switchDashboardTab('play', 4)">Play Game</button>
+            <!-- Mobile: Specific game type tabs -->
+            <button class="dashboard-tab mobile-game-tab active" data-tab-type="game" onclick="switchDashboardTab('play', 4)">4-Number</button>
+            <button class="dashboard-tab mobile-game-tab" data-tab-type="game" onclick="switchDashboardTab('play', 3)">3-Number</button>
+            <!-- Both: My Betting Details tab -->
             <button class="dashboard-tab" onclick="switchDashboardTab('details')">My Betting Details</button>
         </div>
     </div>
@@ -184,25 +188,27 @@
 
                     <div class="game-interface">
                             <div class="game-instructions">
-                                <p id="game-instruction">Select 4 numbers (0-9) in the correct sequence</p>
+                                <p id="game-instruction">Step 1: Select your bet amount</p>
                                 
-                                <!-- Attempts Selection -->
-                                <div class="attempts-selector">
-                                    <label for="attempts-select">Choose Attempts:</label>
+                                <div class="bet-amount-display" id="bet-amount-display" style="display: none;">
+                                    <span>Bet Amount: <strong id="current-bet-amount">₦0.00</strong></span>
+                                </div>
+                                
+                                <!-- Step 2: Attempts Selection (hidden initially) -->
+                                <div class="attempts-selector" id="attempts-selector-step" style="display: none;">
+                                    <label for="attempts-select">Step 2: Choose Attempts:</label>
                                     <select id="attempts-select" class="attempts-dropdown" onchange="updateOddsFromAttempts()">
+                                        <option value="">Select attempts...</option>
                                         <option value="2">2 Attempts (10x odds)</option>
-                                        <option value="3" selected>3 Attempts (8x odds)</option>
+                                        <option value="3">3 Attempts (8x odds)</option>
                                         <option value="4">4 Attempts (6x odds)</option>
                                         <option value="5">5 Attempts (4x odds)</option>
                                         <option value="6">6 Attempts (3x odds)</option>
                                     </select>
                                 </div>
                                 
-                                <div class="attempts-info">
+                                <div class="attempts-info" style="display: none;">
                                     <span>Remaining Attempts: <strong id="remaining-attempts">3</strong></span>
-                                </div>
-                                <div class="bet-amount-display" id="bet-amount-display" style="display: none;">
-                                    <span>Bet Amount: <strong id="current-bet-amount">₦0.00</strong></span>
                                 </div>
                             </div>
 
@@ -214,7 +220,26 @@
                             <form action="/guess" method="POST" class="guess-form" id="guess-form">
                                 <input type="hidden" name="gameType" id="game-type" value="4">
                                 <input type="hidden" name="attemptsUsed" id="attempts-used" value="0">
-                                <div class="number-selection">
+                                
+                                <!-- Step 1: Bet Amount Section -->
+                                <div class="bet-section" id="bet-section-step">
+                                    <label class="section-label">Bet Amount</label>
+                                    <div class="bet-controls">
+                                        <div class="quick-bet-buttons">
+                                            <button type="button" class="quick-bet">₦100</button>
+                                            <button type="button" class="quick-bet">₦500</button>
+                                            <button type="button" class="quick-bet">₦1,000</button>
+                                            <button type="button" class="quick-bet">₦5,000</button>
+                                        </div>
+                                        <div class="bet-input-container">
+                                            <span class="currency-symbol">₦</span>
+                                            <input type="number" name="betAmount" id="bet-amount" class="bet-input" placeholder="Enter amount..." step="0.01" min="1">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Number Selection (hidden during setup, shown after game starts) -->
+                                <div class="number-selection" id="number-selection-section" style="display: none;">
                                     <label class="section-label">Your Numbers</label>
                                     <div class="number-inputs" id="number-inputs-container">
                                         <input type="number" name="guess1" id="guess1" min="0" max="9" required 
@@ -228,25 +253,8 @@
                                     </div>
                                 </div>
 
-                                <div class="bet-section">
-                                    <label class="section-label">Bet Amount</label>
-                                    <div class="bet-controls">
-                                        <div class="quick-bet-buttons">
-                                            <button type="button" class="quick-bet">₦100</button>
-                                            <button type="button" class="quick-bet">₦500</button>
-                                            <button type="button" class="quick-bet">₦1,000</button>
-                                            <button type="button" class="quick-bet">₦5,000</button>
-                                        </div>
-                                        <div class="bet-input-container">
-                                            <span class="currency-symbol">₦</span>
-                                            <input type="number" name="betAmount" id="bet-amount" class="bet-input" placeholder="0.00" step="0.01" min="1">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="form-actions">
+                                <div class="form-actions" id="form-actions-section" style="display: none;">
                                     <button type="submit" class="btn-place-bet">Check</button>
-                                    <button type="button" class="btn-clear">Clear</button>
                                 </div>
                             </form>
 
@@ -532,16 +540,29 @@
                     }
                 }
                 
-                // Activate the correct tab button based on game type
-                const tabButtons = document.querySelectorAll('.dashboard-tab');
-                if (gameType === 4) {
-                    tabButtons[0].classList.add('active'); // 4-Number tab
-                } else if (gameType === 3) {
-                    tabButtons[1].classList.add('active'); // 3-Number tab
+                // Activate the play tab button(s)
+                // Activate desktop play tab
+                const desktopPlayTab = document.querySelector('.dashboard-tab.desktop-play-tab');
+                if (desktopPlayTab) {
+                    desktopPlayTab.classList.add('active');
                 }
+                
+                // Activate the correct mobile game type tab
+                document.querySelectorAll('.dashboard-tab.mobile-game-tab').forEach(btn => {
+                    const btnText = btn.textContent.trim();
+                    if ((gameType === 4 && btnText.includes('4-Number')) || 
+                        (gameType === 3 && btnText.includes('3-Number'))) {
+                        btn.classList.add('active');
+                    }
+                });
             } else {
                 document.getElementById('details-tab').classList.add('active');
-                document.querySelectorAll('.dashboard-tab')[2].classList.add('active'); // My Betting Details tab
+                // Activate My Betting Details tab (find it by onclick attribute)
+                document.querySelectorAll('.dashboard-tab').forEach(btn => {
+                    if (btn.onclick && btn.onclick.toString().includes("'details'")) {
+                        btn.classList.add('active');
+                    }
+                });
             }
         }
 
@@ -642,18 +663,31 @@
         // Update odds based on selected attempts
         function updateOddsFromAttempts() {
             const attemptsSelect = document.getElementById('attempts-select');
-            selectedAttempts = parseInt(attemptsSelect.value);
-            currentOdds = attemptsToOdds[selectedAttempts];
-            maxAttempts = selectedAttempts;
+            const startBtn = document.getElementById('start-game-btn');
+            const instruction = document.getElementById('game-instruction');
             
-            // Update odds display
-            document.getElementById('odds-display').textContent = `${currentOdds}.00x`;
-            
-            // Update remaining attempts display
-            document.getElementById('remaining-attempts').textContent = selectedAttempts;
-            
-            // Recalculate potential win
-            calculatePotentialWin();
+            if (attemptsSelect.value) {
+                selectedAttempts = parseInt(attemptsSelect.value);
+                currentOdds = attemptsToOdds[selectedAttempts];
+                maxAttempts = selectedAttempts;
+                
+                // Update odds display
+                document.getElementById('odds-display').textContent = `${currentOdds}.00x`;
+                
+                // Update remaining attempts display
+                document.getElementById('remaining-attempts').textContent = selectedAttempts;
+                
+                // Recalculate potential win
+                calculatePotentialWin();
+                
+                // Show step 3: start button
+                startBtn.style.display = 'inline-block';
+                instruction.textContent = 'Step 3: Click "Start Game" to begin';
+            } else {
+                // Hide start button if attempts not selected
+                startBtn.style.display = 'none';
+                instruction.textContent = 'Step 2: Choose your number of attempts';
+            }
         }
 
         // Calculate potential win
@@ -791,9 +825,9 @@
             // Hide generated numbers display
             document.getElementById('generated-numbers-display').style.display = 'none';
             
-            // Show start game button
+            // Reset start game button (hidden initially)
             const startBtn = document.getElementById('start-game-btn');
-            startBtn.style.display = 'inline-block';
+            startBtn.style.display = 'none';
             startBtn.disabled = false;
             startBtn.textContent = 'Start Game';
             startBtn.classList.remove('started');
@@ -801,33 +835,52 @@
             // Hide bet amount display
             document.getElementById('bet-amount-display').style.display = 'none';
             
-            // Enable bet amount input
+            // Show and enable bet amount section (Step 1)
+            const betSection = document.querySelector('.bet-section');
+            if (betSection) {
+                betSection.style.display = 'block';
+            }
             const betAmountInput = document.getElementById('bet-amount');
             if (betAmountInput) {
                 betAmountInput.disabled = false;
                 betAmountInput.value = '';
             }
             
-            // Enable attempts selector
+            // Reset attempts selector (hidden, will show when bet amount entered)
+            const attemptsSelector = document.getElementById('attempts-selector-step');
+            if (attemptsSelector) {
+                attemptsSelector.style.display = 'none';
+            }
             const attemptsSelect = document.getElementById('attempts-select');
             if (attemptsSelect) {
-                attemptsSelect.disabled = false;
-                attemptsSelect.style.opacity = '1';
-                attemptsSelect.style.cursor = 'pointer';
+                attemptsSelect.value = '';
             }
             
-            // Enable clear button
-            const clearBtn = document.querySelector('.btn-clear');
-            if (clearBtn) {
-                clearBtn.disabled = false;
-                clearBtn.style.opacity = '1';
-                clearBtn.style.cursor = 'pointer';
+            // Hide attempts info
+            const attemptsInfo = document.querySelector('.attempts-info');
+            if (attemptsInfo) {
+                attemptsInfo.style.display = 'none';
+            }
+            
+            // Hide number selection section
+            const numberSection = document.getElementById('number-selection-section');
+            if (numberSection) {
+                numberSection.style.display = 'none';
+            }
+            
+            // Hide form actions
+            const formActions = document.getElementById('form-actions-section');
+            if (formActions) {
+                formActions.style.display = 'none';
             }
             
             // Clear number inputs
             document.querySelectorAll('.number-input').forEach(input => {
                 input.value = '';
             });
+            
+            // Reset instruction text
+            document.getElementById('game-instruction').textContent = 'Step 1: Select your bet amount';
             
             // Reset attempts display
             document.getElementById('remaining-attempts').textContent = '3';
@@ -1061,34 +1114,35 @@
         document.querySelectorAll('.quick-bet').forEach(btn => {
             btn.addEventListener('click', function() {
                 const amount = this.textContent.replace('₦', '').replace(',', '');
-                document.getElementById('bet-amount').value = amount;
-                calculatePotentialWin();
+                const betAmountInput = document.getElementById('bet-amount');
+                betAmountInput.value = amount;
+                
+                // Trigger the input event to show step 2
+                const event = new Event('input', { bubbles: true });
+                betAmountInput.dispatchEvent(event);
             });
         });
 
-        // Bet amount input listener
+        // Bet amount input listener with progressive UI flow
         document.getElementById('bet-amount').addEventListener('input', function() {
+            const betAmount = parseFloat(this.value);
+            const attemptsSelector = document.getElementById('attempts-selector-step');
+            const instruction = document.getElementById('game-instruction');
+            
+            if (betAmount && betAmount > 0) {
+                // Show step 2: attempts selector
+                attemptsSelector.style.display = 'block';
+                instruction.textContent = 'Step 2: Choose your number of attempts';
+            } else {
+                // Hide steps 2 and 3 if bet amount is cleared
+                attemptsSelector.style.display = 'none';
+                document.getElementById('start-game-btn').style.display = 'none';
+                instruction.textContent = 'Step 1: Select your bet amount';
+            }
+            
             calculatePotentialWin();
         });
 
-        // Clear button
-        document.querySelector('.btn-clear')?.addEventListener('click', function() {
-            const betAmountInput = document.getElementById('bet-amount');
-            
-            // Only clear number inputs, don't clear bet amount if game is active
-            document.querySelectorAll('.number-input').forEach(input => {
-                input.value = '';
-            });
-            
-            // Only clear bet amount if it's not disabled (i.e., no active game)
-            if (betAmountInput && !betAmountInput.disabled) {
-                betAmountInput.value = '';
-            }
-            
-            if (document.getElementById('guess1')) {
-                document.getElementById('guess1').focus({ preventScroll: true });
-            }
-        });
 
         // Initialize
         attachInputListeners();
@@ -1212,7 +1266,7 @@
                 }
                 
                 if (data.success && data.hasActiveGame) {
-                    // Game is active
+                    // Game is active - show game interface
                     const startBtn = document.getElementById('start-game-btn');
                     startBtn.style.display = 'none';
                     startBtn.disabled = false;
@@ -1229,27 +1283,45 @@
                         betAmountText.textContent = `₦${data.betAmount.toLocaleString('en-NG', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
                     }
                     
+                    // Hide bet amount section completely
+                    const betSection = document.querySelector('.bet-section');
+                    if (betSection) {
+                        betSection.style.display = 'none';
+                    }
+                    
                     // Disable bet amount input
                     const betAmountInput = document.getElementById('bet-amount');
                     if (betAmountInput) {
                         betAmountInput.disabled = true;
                     }
                     
-                    // Disable attempts selector
-                    const attemptsSelect = document.getElementById('attempts-select');
-                    if (attemptsSelect) {
-                        attemptsSelect.disabled = true;
-                        attemptsSelect.style.opacity = '0.5';
-                        attemptsSelect.style.cursor = 'not-allowed';
+                    // Hide attempts selector completely
+                    const attemptsSelector = document.getElementById('attempts-selector-step');
+                    if (attemptsSelector) {
+                        attemptsSelector.style.display = 'none';
                     }
                     
-                    // Disable clear button
-                    const clearBtn = document.querySelector('.btn-clear');
-                    if (clearBtn) {
-                        clearBtn.disabled = true;
-                        clearBtn.style.opacity = '0.5';
-                        clearBtn.style.cursor = 'not-allowed';
+                    // Show number selection section
+                    const numberSection = document.getElementById('number-selection-section');
+                    if (numberSection) {
+                        numberSection.style.display = 'block';
                     }
+                    
+                    // Show form actions
+                    const formActions = document.getElementById('form-actions-section');
+                    if (formActions) {
+                        formActions.style.display = 'flex';
+                    }
+                    
+                    // Show attempts info
+                    const attemptsInfo = document.querySelector('.attempts-info');
+                    if (attemptsInfo) {
+                        attemptsInfo.style.display = 'block';
+                    }
+                    
+                    // Update instruction
+                    const gameType = data.gameType || 4;
+                    document.getElementById('game-instruction').textContent = `Select ${gameType} numbers (0-9) in the correct sequence`;
                     
                     // Update attempts display using server-side values only
                     const remainingAttempts = data.attempts - data.attemptsUsed;
@@ -1257,28 +1329,12 @@
                     attemptsUsed = data.attemptsUsed;
                     maxAttempts = data.attempts;
                 } else {
-                    // No active game - reset to default view
-                    const startBtn = document.getElementById('start-game-btn');
-                    startBtn.style.display = 'inline-block';
-                    startBtn.disabled = false;
-                    startBtn.textContent = 'Start Game';
-                    startBtn.classList.remove('started');
+                    // No active game - reset to step 1
+                    resetToDefaultView();
                     
-                    document.getElementById('generated-numbers-display').style.display = 'none';
-                    document.getElementById('bet-amount-display').style.display = 'none';
-                    
-                    // Enable bet amount input
                     const betAmountInput = document.getElementById('bet-amount');
                     if (betAmountInput) {
                         betAmountInput.disabled = false;
-                    }
-                    
-                    // Enable clear button
-                    const clearBtn = document.querySelector('.btn-clear');
-                    if (clearBtn) {
-                        clearBtn.disabled = false;
-                        clearBtn.style.opacity = '1';
-                        clearBtn.style.cursor = 'pointer';
                     }
                 }
             } catch (error) {
@@ -1345,24 +1401,39 @@
                     attemptsUsed = 0;
                     updateAttemptsDisplay(maxAttempts);
                     
-                    // Disable bet amount input
+                    // Hide bet amount section completely
+                    const betSection = document.querySelector('.bet-section');
+                    if (betSection) {
+                        betSection.style.display = 'none';
+                    }
                     betAmountInput.disabled = true;
                     
-                    // Disable attempts selector
-                    const attemptsSelect = document.getElementById('attempts-select');
-                    if (attemptsSelect) {
-                        attemptsSelect.disabled = true;
-                        attemptsSelect.style.opacity = '0.5';
-                        attemptsSelect.style.cursor = 'not-allowed';
+                    // Hide attempts selector completely
+                    const attemptsSelector = document.getElementById('attempts-selector-step');
+                    if (attemptsSelector) {
+                        attemptsSelector.style.display = 'none';
                     }
                     
-                    // Disable clear button
-                    const clearBtn = document.querySelector('.btn-clear');
-                    if (clearBtn) {
-                        clearBtn.disabled = true;
-                        clearBtn.style.opacity = '0.5';
-                        clearBtn.style.cursor = 'not-allowed';
+                    // Show number selection section
+                    const numberSection = document.getElementById('number-selection-section');
+                    if (numberSection) {
+                        numberSection.style.display = 'block';
                     }
+                    
+                    // Show form actions (Check and Clear buttons)
+                    const formActions = document.getElementById('form-actions-section');
+                    if (formActions) {
+                        formActions.style.display = 'flex';
+                    }
+                    
+                    // Show attempts info
+                    const attemptsInfo = document.querySelector('.attempts-info');
+                    if (attemptsInfo) {
+                        attemptsInfo.style.display = 'block';
+                    }
+                    
+                    // Update instruction
+                    document.getElementById('game-instruction').textContent = `Select ${gameType} numbers (0-9) in the correct sequence`;
                     
                     // Store demo game data
                     sessionStorage.setItem('demo_game', JSON.stringify({
@@ -1417,24 +1488,39 @@
                     attemptsUsed = 0;
                     updateAttemptsDisplay(data.attempts); // Show attempts from database
                     
-                    // Disable bet amount input
+                    // Hide bet amount section completely
+                    const betSection = document.querySelector('.bet-section');
+                    if (betSection) {
+                        betSection.style.display = 'none';
+                    }
                     betAmountInput.disabled = true;
                     
-                    // Disable attempts selector
-                    const attemptsSelect = document.getElementById('attempts-select');
-                    if (attemptsSelect) {
-                        attemptsSelect.disabled = true;
-                        attemptsSelect.style.opacity = '0.5';
-                        attemptsSelect.style.cursor = 'not-allowed';
+                    // Hide attempts selector completely
+                    const attemptsSelector = document.getElementById('attempts-selector-step');
+                    if (attemptsSelector) {
+                        attemptsSelector.style.display = 'none';
                     }
                     
-                    // Disable clear button
-                    const clearBtn = document.querySelector('.btn-clear');
-                    if (clearBtn) {
-                        clearBtn.disabled = true;
-                        clearBtn.style.opacity = '0.5';
-                        clearBtn.style.cursor = 'not-allowed';
+                    // Show number selection section
+                    const numberSection = document.getElementById('number-selection-section');
+                    if (numberSection) {
+                        numberSection.style.display = 'block';
                     }
+                    
+                    // Show form actions (Check and Clear buttons)
+                    const formActions = document.getElementById('form-actions-section');
+                    if (formActions) {
+                        formActions.style.display = 'flex';
+                    }
+                    
+                    // Show attempts info
+                    const attemptsInfo = document.querySelector('.attempts-info');
+                    if (attemptsInfo) {
+                        attemptsInfo.style.display = 'block';
+                    }
+                    
+                    // Update instruction
+                    document.getElementById('game-instruction').textContent = `Select ${gameType} numbers (0-9) in the correct sequence`;
                     
                     // Update balance display if available
                     if (data.newBalance !== undefined) {

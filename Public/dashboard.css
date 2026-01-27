@@ -125,6 +125,15 @@
     border-bottom-color: var(--accent-red);
 }
 
+/* Desktop: Show general play tab, hide specific game type tabs */
+.dashboard-tab.desktop-play-tab {
+    display: block;
+}
+
+.dashboard-tab.mobile-game-tab {
+    display: none;
+}
+
 /* Tab Content */
 .tab-content {
     display: none;
@@ -1346,6 +1355,15 @@
         white-space: nowrap;
         text-align: center;
         min-width: 0;
+    }
+    
+    /* Mobile: Hide general play tab, show specific game type tabs */
+    .dashboard-tab.desktop-play-tab {
+        display: none;
+    }
+    
+    .dashboard-tab.mobile-game-tab {
+        display: block;
     }
     
     /* Main content spacing */
