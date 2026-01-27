@@ -1571,6 +1571,12 @@ body {
         gap: 8px;
     }
     
+    .btn-login-nav {
+        padding: 6px 16px;
+        font-size: 0.75rem;
+        height: 30px;
+    }
+    
     .language-selector {
         padding: 6px 10px;
         font-size: 0.75rem;

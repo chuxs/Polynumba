@@ -97,7 +97,8 @@
     <!-- Dashboard Tabs -->
     <div class="dashboard-tabs">
         <div class="dashboard-tabs-container">
-            <button class="dashboard-tab active" onclick="switchDashboardTab('play')">Play Game</button>
+            <button class="dashboard-tab active" onclick="switchDashboardTab('play', 4)">4-Number</button>
+            <button class="dashboard-tab" onclick="switchDashboardTab('play', 3)">3-Number</button>
             <button class="dashboard-tab" onclick="switchDashboardTab('details')">My Betting Details</button>
         </div>
     </div>
@@ -509,7 +510,7 @@
         window.scrollTo(0, 0);
 
         // Dashboard Tab Switching
-        function switchDashboardTab(tab) {
+        function switchDashboardTab(tab, gameType) {
             // Hide all tabs
             document.querySelectorAll('.tab-content').forEach(content => {
                 content.classList.remove('active');
@@ -523,10 +524,24 @@
             // Show selected tab
             if (tab === 'play') {
                 document.getElementById('play-tab').classList.add('active');
-                document.querySelectorAll('.dashboard-tab')[0].classList.add('active');
+                
+                // Switch game type if provided
+                if (gameType) {
+                    if (typeof switchGameType === 'function') {
+                        switchGameType(gameType);
+                    }
+                }
+                
+                // Activate the correct tab button based on game type
+                const tabButtons = document.querySelectorAll('.dashboard-tab');
+                if (gameType === 4) {
+                    tabButtons[0].classList.add('active'); // 4-Number tab
+                } else if (gameType === 3) {
+                    tabButtons[1].classList.add('active'); // 3-Number tab
+                }
             } else {
                 document.getElementById('details-tab').classList.add('active');
-                document.querySelectorAll('.dashboard-tab')[1].classList.add('active');
+                document.querySelectorAll('.dashboard-tab')[2].classList.add('active'); // My Betting Details tab
             }
         }
 
@@ -538,6 +553,18 @@
         let currentOdds = 8; // Current odds based on attempts
         let playMode = 'real'; // 'real' or 'demo'
         let demoBalance = 100000; // Demo balance in Naira
+        
+        // Game type configuration
+        const attemptsConfig = {
+            3: 3,  // 3-number game has 3 max attempts
+            4: 3   // 4-number game has 3 max attempts
+        };
+        
+        // Base odds for game types
+        const odds = {
+            3: 100,  // 3-number prediction base odds
+            4: 1000  // 4-number prediction base odds
+        };
         
         // Attempts to Odds mapping (inversely proportional)
         const attemptsToOdds = {
@@ -665,7 +692,10 @@
             document.getElementById('odds-display').textContent = `${odds[type]}.00x`;
             
             // Update attempts display
-            updateAttemptsDisplay();
+            const remainingAttemptsElem = document.getElementById('remaining-attempts');
+            if (remainingAttemptsElem) {
+                remainingAttemptsElem.textContent = maxAttempts;
+            }
             
             // Recalculate potential win
             calculatePotentialWin();
@@ -679,6 +709,9 @@
             // Check game status after switching (in case user has active game)
             checkGameStatus();
         }
+        
+        // Make function globally accessible
+        window.switchGameType = switchGameType;
 
         // Rebuild number inputs based on game type
         function rebuildNumberInputs(count) {

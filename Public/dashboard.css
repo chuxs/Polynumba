@@ -1335,12 +1335,17 @@
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         padding: 0 16px;
+        display: flex;
+        justify-content: space-between;
     }
     
     .dashboard-tab {
-        padding: 14px 24px;
-        font-size: 0.875rem;
+        flex: 1;
+        padding: 14px 12px;
+        font-size: 0.8125rem;
         white-space: nowrap;
+        text-align: center;
+        min-width: 0;
     }
     
     /* Main content spacing */
@@ -1699,11 +1704,14 @@
     
     .dashboard-tabs-container {
         padding: 0 12px;
+        gap: 0;
     }
     
     .dashboard-tab {
-        padding: 12px 16px;
+        flex: 1;
+        padding: 12px 10px;
         font-size: 0.75rem;
+        text-align: center;
     }
     
     .tab-content {
@@ -1949,8 +1957,11 @@
     }
     
     .dashboard-tab {
-        padding: 10px 14px;
+        flex: 1;
+        padding: 10px 8px;
         font-size: 0.6875rem;
+        text-align: center;
+        letter-spacing: 0;
     }
     
     .stat-icon {
